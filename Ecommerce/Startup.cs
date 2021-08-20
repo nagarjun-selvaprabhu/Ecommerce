@@ -1,4 +1,6 @@
 using Ecommerce.Data;
+using Ecommerce.Repository;
+using Ecommerce.Repository.Interface;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -36,6 +38,8 @@ namespace Ecommerce
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Ecommerce", Version = "v1" });
             });
+
+            services.AddScoped<IProductRepo, ProductRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
