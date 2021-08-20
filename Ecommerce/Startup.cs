@@ -39,6 +39,8 @@ namespace Ecommerce
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Ecommerce", Version = "v1" });
             });
 
+            services.AddMemoryCache();
+
             services.AddScoped<IProductRepo, ProductRepo>();
         }
 
