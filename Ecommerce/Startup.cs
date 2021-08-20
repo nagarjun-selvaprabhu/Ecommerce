@@ -11,10 +11,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Polly;
+using Polly.Extensions.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ecommerce
 {
@@ -32,7 +33,18 @@ namespace Ecommerce
         {
             services.AddDbContext<ApplicationDbContext>
                 (options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            
+
+
+            // Added Polly for making the Microservies Resilient
+            services.AddHttpClient("nagarjun").SetHandlerLifetime(TimeSpan.FromMinutes(5))
+                .AddPolicyHandler((IAsyncPolicy<System.Net.Http.HttpResponseMessage>)HttpPolicyExtensions
+                // HttpRequestException, 5XX and 408  
+                .HandleTransientHttpError()
+                // 404  
+                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+                // Retry two times after delay  
+                .WaitAndRetryAsync(2, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

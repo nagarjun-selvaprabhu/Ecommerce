@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 
 namespace Ecommerce.Controllers
 {
@@ -18,12 +19,14 @@ namespace Ecommerce.Controllers
         private IProductRepo _productRepo;
         private readonly IMemoryCache _cache;
         private readonly ILogger _logger;
+        private readonly IHttpClientFactory _clientFactory;
 
-        public ProductsController(IProductRepo productRepo, IMemoryCache cache, ILogger<ProductsController> logger)
+        public ProductsController(IProductRepo productRepo, IMemoryCache cache, ILogger<ProductsController> logger, IHttpClientFactory clientFactory)
         {
             _productRepo = productRepo;
             _cache = cache;
             _logger = logger;
+            _clientFactory = clientFactory;
         }
 
         [HttpGet]
@@ -44,6 +47,8 @@ namespace Ecommerce.Controllers
             _logger.LogInformation("ended GetAllProducts() method");
             return Ok(objList);
         }
+
+
 
     }
 }
