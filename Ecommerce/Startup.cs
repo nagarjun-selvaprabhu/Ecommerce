@@ -2,7 +2,9 @@ using Ecommerce.Data;
 using Ecommerce.Repository;
 using Ecommerce.Repository.Interface;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,7 @@ using Polly;
 using Polly.Extensions.Http;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Ecommerce
@@ -64,6 +67,36 @@ namespace Ecommerce
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce v1"));
+            }
+            else
+            {
+                //app.UseExceptionHandler("/error");
+
+                app.UseExceptionHandler(errorApp =>
+                {
+                    errorApp.Run(async context =>
+                    {
+                        context.Response.StatusCode = 500;
+                        context.Response.ContentType = "text/html";
+
+                        await context.Response.WriteAsync("<html lang=\"en\"><body>\r\n");
+                        await context.Response.WriteAsync("ERROR!<br><br>\r\n");
+
+                        var exceptionHandlerPathFeature =
+                            context.Features.Get<IExceptionHandlerPathFeature>();
+
+                        if (exceptionHandlerPathFeature?.Error is FileNotFoundException)
+                        {
+                            await context.Response.WriteAsync(
+                                                      "File error thrown!<br><br>\r\n");
+                        }
+
+                        await context.Response.WriteAsync(
+                                                      "<a href=\"/\">Home</a><br>\r\n");
+                        await context.Response.WriteAsync("</body></html>\r\n");
+                        await context.Response.WriteAsync(new string(' ', 512));
+                    });
+                });
             }
 
             app.UseHttpsRedirection();
