@@ -9,6 +9,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using Ecommerce.Model;
+using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
 
 namespace Ecommerce.Controllers
 {
@@ -20,13 +22,23 @@ namespace Ecommerce.Controllers
         private readonly IMemoryCache _cache;
         private readonly ILog logger;
         private readonly IHttpClientFactory _clientFactory;
+        private readonly IConfiguration _configuration;
+        private readonly string connString;
 
-        public ProductsController(ILog logger,IProductRepo productRepo, IMemoryCache cache, IHttpClientFactory clientFactory)
+        public ProductsController(IConfiguration configuration,ILog logger,IProductRepo productRepo, IMemoryCache cache, IHttpClientFactory clientFactory)
         {
+            _configuration = configuration;
             _productRepo = productRepo;
             _cache = cache;
             this.logger = logger;
             _clientFactory = clientFactory;
+            var host = _configuration["DBHOST"] ?? "localhost";
+            var port = _configuration["DBPORT"] ?? "3306";
+            var password = _configuration["MYSQL_PASSWORD"] ?? "";
+            var userid = _configuration["MYSQL_USER"] ?? "";
+            var usersDataBase = _configuration["MYSQL_DATABASE"] ?? "Products";
+
+            connString = $"server={host}; userid={userid};pwd={password};port={port};database={usersDataBase}";
         }
 
         [HttpGet]
@@ -42,12 +54,14 @@ namespace Ecommerce.Controllers
                 {
                     return Ok(products);
                 }
-
-                var myTask = Task.Run(() => _productRepo.GetAllProducts());
-                var objList = await myTask;
-                _cache.Set(cacheKey, objList);
-                logger.Information("Information is logged");
-                return Ok(objList);
+                using (var connection = new MySqlConnection(connString))
+                {
+                    var myTask = Task.Run(() => _productRepo.GetAllProducts());
+                    var objList = await myTask;
+                    _cache.Set(cacheKey, objList);
+                    logger.Information("Information is logged");
+                    return Ok(objList);
+                }
             }
             catch (Exception ex)
             {

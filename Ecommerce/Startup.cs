@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Polly;
 using Polly.Extensions.Http;
+using Prometheus;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,7 +35,7 @@ namespace Ecommerce
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddSingleton<MetricReporter>();
             services.AddSingleton<ILog, LogNLog>();
             services.AddDbContext<ApplicationDbContext>
                 (options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
@@ -64,6 +65,10 @@ namespace Ecommerce
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Using Prometheus for metrics
+
+            app.UseMetricServer();
+            app.UseMiddleware<ResponseMetricMiddleware>();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
