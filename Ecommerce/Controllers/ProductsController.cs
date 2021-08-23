@@ -33,19 +33,27 @@ namespace Ecommerce.Controllers
         [ProducesResponseType(200, Type = typeof(List<Products>))]
         public async Task<IActionResult> GetAllProducts()
         {
-            logger.Information("Information is logged");
-            var cacheKey = "GET_ALL_PRODUCTS";
-
-            if (_cache.TryGetValue(cacheKey, out List<Products> products))
+            try
             {
-                return Ok(products);
-            }
+                logger.Information("Information is logged");
+                var cacheKey = "GET_ALL_PRODUCTS";
 
-            var myTask = Task.Run(() => _productRepo.GetAllProducts());
-            var objList = await myTask;
-            _cache.Set(cacheKey, objList);
-            logger.Information("Information is logged");
-            return Ok(objList);
+                if (_cache.TryGetValue(cacheKey, out List<Products> products))
+                {
+                    return Ok(products);
+                }
+
+                var myTask = Task.Run(() => _productRepo.GetAllProducts());
+                var objList = await myTask;
+                _cache.Set(cacheKey, objList);
+                logger.Information("Information is logged");
+                return Ok(objList);
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"Something went wrong: {ex}");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
 
