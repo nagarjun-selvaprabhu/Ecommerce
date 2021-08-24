@@ -51,16 +51,9 @@ namespace OrderEndpoint.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public List<ProductDto> CreateProducts([FromBody] ProductDto products)
         {
-            try
-            {
                 var responseString = ApiCall.PostApi("https://localhost:44332/api/Products", products.ToString());
                 var rootobject = new JavaScriptSerializer().Deserialize<List<ProductDto>>(responseString);
                 return rootobject;
-            }
-            catch (Exception ex)
-            {
-                return new List<ProductDto>();
-            }
 
         }
 

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using OrderEndpoint.Mapper;
+using OrderEndpoint.Middleware;
 
 namespace OrderEndpoint
 {
@@ -41,7 +42,7 @@ namespace OrderEndpoint
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "OrderEndpoint v1"));
             }
-
+            app.ConfigureExceptionHandler();
             app.UseHttpsRedirection();
 
             app.UseRouting();
