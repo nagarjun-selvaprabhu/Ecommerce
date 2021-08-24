@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OrderEndpoint.Mapper;
 
 namespace OrderEndpoint
 {
@@ -30,7 +31,7 @@ namespace OrderEndpoint
         {
             services.AddDbContext<ApplicationDbContext>
                 (options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
+            services.AddAutoMapper(typeof(OrderMapper));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
