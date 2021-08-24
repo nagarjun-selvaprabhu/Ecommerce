@@ -9,6 +9,8 @@ using System.Net.Http;
 using Ecommerce.Model;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
+using AutoMapper;
+using Ecommerce.Model.Dtos;
 
 namespace Ecommerce.Controllers
 {
@@ -19,12 +21,14 @@ namespace Ecommerce.Controllers
         private IProductRepo _productRepo;
         private readonly IMemoryCache _cache;
         private readonly ILog logger;
+        private readonly IMapper _mapper;
 
-        public ProductsController(ILog logger,IProductRepo productRepo, IMemoryCache cache)
+        public ProductsController(ILog logger,IProductRepo productRepo, IMemoryCache cache, IMapper mapper)
         {
             _productRepo = productRepo;
             _cache = cache;
             this.logger = logger;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -42,6 +46,11 @@ namespace Ecommerce.Controllers
                 } 
                     var myTask = Task.Run(() => _productRepo.GetAllProducts());
                     var objList = await myTask;
+                    var objDto = new List<ProductDto>();
+                    foreach (var obj in objList)
+                    {
+                        objDto.Add(_mapper.Map<ProductDto>(obj));
+                    }
                     _cache.Set(cacheKey, objList);
                     logger.Information("GetAllProducts method Exited");
                     return Ok(objList);
@@ -63,12 +72,13 @@ namespace Ecommerce.Controllers
             {
                 logger.Information("Inside GetProduct method");
                 var obj = _productRepo.GetProduct(ProductsId);
+                var objDto = _mapper.Map<ProductDto>(obj);
                 if (obj == null)
                 {
                     return NotFound();
                 }
                 logger.Information("GetProduct method Exited");
-                return Ok(obj);
+                return Ok(objDto);
             }
             catch (Exception ex)
             {
@@ -78,11 +88,11 @@ namespace Ecommerce.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(201, Type = typeof(Products))]
+        [ProducesResponseType(201, Type = typeof(ProductDto))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateProducts([FromBody] Products products)
+        public async Task<IActionResult> CreateProducts([FromBody] ProductDto products)
         {
             try
             {
@@ -96,17 +106,13 @@ namespace Ecommerce.Controllers
                     ModelState.AddModelError("", "Product Already Exists!");
                     return StatusCode(404, ModelState);
                 }
-                var flag = _productRepo.CreateProduct(products);
-                if (flag)
+                var ProductObj = _mapper.Map<Products>(products);
+                if (!_productRepo.CreateProduct(ProductObj))
                 {
-                    logger.Information("CreateProducts method Exited");
-                    return Ok("successfully created");
+                    ModelState.AddModelError("", $"Something went wrong when saving the record {ProductObj.ProductName}");
+                    return StatusCode(500, ModelState);
                 }
-                else
-                {
-                    logger.Information("CreateProducts method Exited");
-                    return StatusCode(404, ModelState);
-                }
+                return CreatedAtRoute("GetProduct", new { ProductsId = ProductObj.Id }, ProductObj);
             }
             catch (Exception ex)
             {
@@ -115,11 +121,11 @@ namespace Ecommerce.Controllers
             }
         }
 
-        [HttpPatch("{ProductsId:int}", Name = "UpdateProductsk")]
+        [HttpPatch("{ProductsId:int}", Name = "UpdateProducts")]
         [ProducesResponseType(204)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateProductsk(int ProductsId, [FromBody] Products products)
+        public IActionResult UpdateProductsk(int ProductsId, [FromBody] ProductDto products)
         {
             try
             {
@@ -127,15 +133,14 @@ namespace Ecommerce.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                var flag = _productRepo.UpdateProduct(products);
-                if (flag)
+                var ProductObj = _mapper.Map<Products>(products);
+                if (!_productRepo.UpdateProduct(ProductObj))
                 {
-                    return Ok("successfully updated");
+                    ModelState.AddModelError("", $"Something went wrong when updating the record {ProductObj.ProductName}");
+                    return StatusCode(500, ModelState);
                 }
-                else
-                {
-                    return StatusCode(404, ModelState);
-                }
+
+                return NoContent();
             }
             catch(Exception e)
             {
@@ -144,6 +149,7 @@ namespace Ecommerce.Controllers
             }
 
         }
+
 
 
     }

@@ -1,4 +1,5 @@
 using Ecommerce.Data;
+using Ecommerce.Mapper;
 using Ecommerce.Repository;
 using Ecommerce.Repository.Interface;
 using Microsoft.AspNetCore.Builder;
@@ -12,6 +13,7 @@ using Polly;
 using Polly.Extensions.Http;
 using Prometheus;
 using System;
+using AutoMapper;
 
 namespace Ecommerce
 {
@@ -60,6 +62,7 @@ namespace Ecommerce
             services.AddMemoryCache();
 
             services.AddScoped<IProductRepo, ProductRepo>();
+            services.AddAutoMapper(typeof(ProductMapper));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
