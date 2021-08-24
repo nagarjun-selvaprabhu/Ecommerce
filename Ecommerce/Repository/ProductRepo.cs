@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Ecommerce.Repository
 {
+    // Service layer consists the logic for Products endpoint
     public class ProductRepo : IProductRepo
     {
         private readonly ApplicationDbContext _db;

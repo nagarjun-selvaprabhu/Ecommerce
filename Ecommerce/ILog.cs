@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Ecommerce
+﻿namespace Ecommerce
 {
+
+    //Interface for Nlog
     public interface ILog
     {
         void Information(string message);

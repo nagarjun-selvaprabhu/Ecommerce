@@ -2,9 +2,11 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 WORKDIR /app
-#EXPOSE 80/tcp
 EXPOSE 5200
 EXPOSE 443
+#comment the above two lines and
+#uncomment the below for docker-compose
+#EXPOSE 80/tcp
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src

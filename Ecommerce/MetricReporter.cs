@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Ecommerce
 {
+
+    //This class contains the base logic for request and responce metrics
     public class MetricReporter
     {
         private readonly ILogger<MetricReporter> _logger;

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Ecommerce
 {
+    //This is a middleware layer for metrics
+    //check Startup.cs for it's usage
     public class ResponseMetricMiddleware
     {
         private readonly RequestDelegate _request;

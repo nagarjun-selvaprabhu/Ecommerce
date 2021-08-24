@@ -1,11 +1,9 @@
 ﻿using NLog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ecommerce
 {
+    //This class is to defince NLog Logger Levels
+    //Info , Warn , Debug , Error 
     public class LogNLog : ILog
     {
         private static ILogger logger = LogManager.GetCurrentClassLogger();

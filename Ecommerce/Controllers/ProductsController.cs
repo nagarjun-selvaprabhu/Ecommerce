@@ -3,10 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using Ecommerce.Model;
 using Microsoft.Extensions.Configuration;
@@ -21,24 +19,12 @@ namespace Ecommerce.Controllers
         private IProductRepo _productRepo;
         private readonly IMemoryCache _cache;
         private readonly ILog logger;
-        private readonly IHttpClientFactory _clientFactory;
-        private readonly IConfiguration _configuration;
-        private readonly string connString;
 
-        public ProductsController(IConfiguration configuration,ILog logger,IProductRepo productRepo, IMemoryCache cache, IHttpClientFactory clientFactory)
+        public ProductsController(ILog logger,IProductRepo productRepo, IMemoryCache cache)
         {
-            _configuration = configuration;
             _productRepo = productRepo;
             _cache = cache;
             this.logger = logger;
-            _clientFactory = clientFactory;
-            var host = _configuration["DBHOST"] ?? "localhost";
-            var port = _configuration["DBPORT"] ?? "3306";
-            var password = _configuration["MYSQL_PASSWORD"] ?? "";
-            var userid = _configuration["MYSQL_USER"] ?? "";
-            var usersDataBase = _configuration["MYSQL_DATABASE"] ?? "Products";
-
-            connString = $"server={host}; userid={userid};pwd={password};port={port};database={usersDataBase}";
         }
 
         [HttpGet]
@@ -53,20 +39,17 @@ namespace Ecommerce.Controllers
                 if (_cache.TryGetValue(cacheKey, out List<Products> products))
                 {
                     return Ok(products);
-                }
-                using (var connection = new MySqlConnection(connString))
-                {
+                } 
                     var myTask = Task.Run(() => _productRepo.GetAllProducts());
                     var objList = await myTask;
                     _cache.Set(cacheKey, objList);
                     logger.Information("GetAllProducts method Exited");
                     return Ok(objList);
-                }
             }
             catch (Exception ex)
             {
                 logger.Error($"Something went wrong: {ex}");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, "Something Went Wrong!");
             }
         }
 
@@ -78,17 +61,19 @@ namespace Ecommerce.Controllers
         {
             try
             {
+                logger.Information("Inside GetProduct method");
                 var obj = _productRepo.GetProduct(ProductsId);
                 if (obj == null)
                 {
                     return NotFound();
                 }
+                logger.Information("GetProduct method Exited");
                 return Ok(obj);
             }
             catch (Exception ex)
             {
                 logger.Error($"Something went wrong: {ex}");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, "Something Went Wrong!");
             }
         }
 
@@ -101,29 +86,32 @@ namespace Ecommerce.Controllers
         {
             try
             {
+                logger.Information("Inside CreateProducts method");
                 if (products == null)
                 {
                     return BadRequest();
                 }
                 if (_productRepo.ProductExists(products.ProductName))
                 {
-                    ModelState.AddModelError("", "National Park Exists!");
+                    ModelState.AddModelError("", "Product Already Exists!");
                     return StatusCode(404, ModelState);
                 }
                 var flag = _productRepo.CreateProduct(products);
                 if (flag)
                 {
+                    logger.Information("CreateProducts method Exited");
                     return Ok("successfully created");
                 }
                 else
                 {
+                    logger.Information("CreateProducts method Exited");
                     return StatusCode(404, ModelState);
                 }
             }
             catch (Exception ex)
             {
                 logger.Error($"Something went wrong: {ex}");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, "Something Went Wrong!");
             }
         }
 
@@ -152,7 +140,7 @@ namespace Ecommerce.Controllers
             catch(Exception e)
             {
                 logger.Error($"Something went wrong: {e}");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, "Something Went Wrong!");
             }
 
         }
