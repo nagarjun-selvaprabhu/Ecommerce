@@ -42,8 +42,6 @@ namespace OrderEndpoint.Controllers
             var responseString = ApiCall.GetApi(url);
             Console.WriteLine(responseString);
             return Ok(responseString);
-            //var rootobject = new JavaScriptSerializer().Deserialize<List<ProductDto>>(responseString);
-            //return rootobject;
         }
 
         [HttpPost]
