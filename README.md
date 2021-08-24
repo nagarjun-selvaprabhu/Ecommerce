@@ -14,7 +14,9 @@ And Order makes use of these API endpoints which in-turn calls these GetProd , G
 
 ## Packages Used 
 * Polly for resilience which will retry the endpoint two times after inital fail
-* 
+* Global transient/scoped fault handling using custom middleware in OrderEndpoint. check ExceptionMiddlewareExtensions.cs and startup.cs in ``` app.ConfigureExceptionHandler(); ```
+* Prometheus for metrics
+* Used NLog for logging ( both console and file )
 
 ### Todo 
 * The right approach is to leverage the use of message bus like RabbitMQ
